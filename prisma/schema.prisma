@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  email         String     @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String?
+  profileImage  String?
+  role          Role       @default(EMPLOYEE)
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relations
+  employee      Employee?
+  sessions      Session[]
+  auditLogs     AuditLog[]
+  residenceReqs ResidenceRequest[] @relation("SubmittedBy")
+  reviewedReqs  ResidenceRequest[] @relation("ReviewedBy")
+}
+
+model Employee {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  employeeId      String   @unique
+  department      String
+  position        String
+  dateOfJoining   DateTime
+  salary          Float?
+  currentAddress  String
+  permanentAddr   String
+  emergencyContact String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  residenceReqs   ResidenceRequest[]
+}
+
+model ResidenceRequest {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  employeeId      String    @db.ObjectId
+  submittedBy     String    @db.ObjectId
+  newAddress      String
+  moveDate        DateTime
+  reason          String
+  documentation   String?   // Cloudinary URL
+  status          ReqStatus @default(PENDING)
+  reviewedBy      String?   @db.ObjectId
+  reviewDate      DateTime?
+  comments        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  employee        Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  submitter       User      @relation("SubmittedBy", fields: [submittedBy], references: [id])
+  reviewer        User?     @relation("ReviewedBy", fields: [reviewedBy], references: [id])
+}
+
+model FraudAlert {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  description   String
+  severity      FraudSeverity
+  status        AlertStatus  @default(OPEN)
+  investigatedBy String?     @db.ObjectId
+  resolvedAt    DateTime?
+  resolution    String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Session {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  action    String
+  resource  String
+  details   String?  // JSON stringified
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Enums
+enum Role {
+  ADMIN
+  HR
+  EMPLOYEE
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ReqStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IN_REVIEW
+}
+
+enum FraudSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+}
