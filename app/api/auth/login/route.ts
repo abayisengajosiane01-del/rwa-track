@@ -73,9 +73,9 @@ export async function POST(request: NextRequest) {
       token,
     });
   } catch (error) {
-    console.error("[v0] Login error:", error);
+    console.error("[v0] Login error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", detail: error instanceof Error ? error.message : String(error) },
       { status: 500 },
     );
   }
