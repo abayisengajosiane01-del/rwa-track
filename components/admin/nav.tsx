@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,11 +23,9 @@ interface NavProps {
 }
 
 export function AdminNav({ user }: NavProps) {
-  const router = useRouter();
-
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   return (
