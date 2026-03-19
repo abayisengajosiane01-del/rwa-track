@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +19,6 @@ import { AlertCircle, ArrowLeft } from "lucide-react";
 import React from "react";
 
 export default function EmployeeNewRequestClient() {
-  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [employee, setEmployee] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -85,7 +83,7 @@ export default function EmployeeNewRequestClient() {
       });
 
       if (res.ok) {
-        router.push("/employee");
+        window.location.href = "/employee";
       } else {
         const data = await res.json();
         setError(data.error || "Failed to submit request");
