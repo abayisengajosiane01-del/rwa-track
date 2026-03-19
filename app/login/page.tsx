@@ -151,15 +151,15 @@ export default function LoginPage() {
               <div className="space-y-2 text-xs">
                 <div className="bg-blue-50 p-2 rounded">
                   <p className="font-semibold">Admin</p>
-                  <p>admin@rwatrack.com / password123</p>
+                  <p>admin@rwatrack.com / Test@12345</p>
                 </div>
                 <div className="bg-blue-50 p-2 rounded">
                   <p className="font-semibold">HR</p>
-                  <p>hr@rwatrack.com / password123</p>
+                  <p>hr@rwatrack.com / Test@12345</p>
                 </div>
                 <div className="bg-blue-50 p-2 rounded">
                   <p className="font-semibold">Employee</p>
-                  <p>employee@rwatrack.com / password123</p>
+                  <p>abayisengajosiane01@gmail.com / Test@12345</p>
                 </div>
               </div>
             </div>

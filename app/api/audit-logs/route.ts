@@ -10,23 +10,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        role: true,
-        status: true,
-        createdAt: true,
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get("limit") ?? "50");
+    const offset = parseInt(searchParams.get("offset") ?? "0");
+
+    const logs = await prisma.auditLog.findMany({
+      include: {
+        user: {
+          select: { email: true, firstName: true, lastName: true },
+        },
       },
       orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
     });
 
-    return NextResponse.json(users);
+    return NextResponse.json({ logs });
   } catch (error) {
-    console.error("[v0] Get users error:", error);
+    console.error("[v0] Get audit logs error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

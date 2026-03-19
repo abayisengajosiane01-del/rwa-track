@@ -16,7 +16,7 @@ async function main() {
     console.log("[v0] Cleared existing data");
 
     // Create Admin User
-    const adminPassword = await hashPassword("password123");
+    const adminPassword = await hashPassword("Test@12345");
     const adminUser = await prisma.user.create({
       data: {
         email: "admin@rwatrack.com",
@@ -31,7 +31,7 @@ async function main() {
     console.log("[v0] Created admin user:", adminUser.email);
 
     // Create HR User
-    const hrPassword = await hashPassword("password123");
+    const hrPassword = await hashPassword("Test@12345");
     const hrUser = await prisma.user.create({
       data: {
         email: "hr@rwatrack.com",
@@ -46,7 +46,7 @@ async function main() {
     console.log("[v0] Created HR user:", hrUser.email);
 
     // Create Employee Users
-    const empPassword = await hashPassword("password123");
+    const empPassword = await hashPassword("Test@12345");
     const employees = [];
 
     const emp1 = await prisma.user.create({
@@ -148,9 +148,9 @@ async function main() {
     console.log("[v0] Database seed completed successfully!");
     console.log("");
     console.log("Demo Credentials:");
-    console.log("Admin: admin@rwatrack.com / password123");
-    console.log("HR: hr@rwatrack.com / password123");
-    console.log("Employee: employee1@rwatrack.com / password123");
+    console.log("Admin: admin@rwatrack.com / Test@12345");
+    console.log("HR: hr@rwatrack.com / Test@12345");
+    console.log("Employee: employee1@rwatrack.com / Test@12345");
   } catch (error) {
     console.error("[v0] Seed error:", error);
     throw error;

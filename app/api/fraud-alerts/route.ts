@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { AlertStatus } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
 
-    const where = status ? { status } : {};
+    const where = status ? { status: status as AlertStatus } : {};
 
     const alerts = await prisma.fraudAlert.findMany({
       where,

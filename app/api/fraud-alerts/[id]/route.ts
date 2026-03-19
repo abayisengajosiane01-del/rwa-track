@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     const user = await getCurrentUser();
 
@@ -14,7 +15,7 @@ export async function GET(
     }
 
     const alert = await prisma.fraudAlert.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!alert) {
@@ -33,8 +34,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     const user = await getCurrentUser();
 
@@ -45,7 +47,7 @@ export async function PUT(
     const { status, resolution } = await request.json();
 
     const alert = await prisma.fraudAlert.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status,
         resolution,

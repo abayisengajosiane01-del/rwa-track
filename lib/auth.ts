@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import bcryptjs from "bcryptjs";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -46,4 +47,15 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
   const token = await getAuthCookie();
   if (!token) return null;
   return verifyToken(token);
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcryptjs.hash(password, 10);
+}
+
+export async function verifyPassword(
+  password: string,
+  hash: string,
+): Promise<boolean> {
+  return bcryptjs.compare(password, hash);
 }

@@ -1,12 +1,9 @@
-import bcryptjs from "bcryptjs";
+import { PrismaClient } from '@prisma/client'
 
-export async function hashPassword(password: string): Promise<string> {
-  return bcryptjs.hash(password, 10);
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
 
-export async function verifyPassword(
-  password: string,
-  hash: string,
-): Promise<boolean> {
-  return bcryptjs.compare(password, hash);
-}
+export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma

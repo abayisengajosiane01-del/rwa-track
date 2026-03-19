@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     const user = await getCurrentUser();
 
@@ -14,7 +15,7 @@ export async function GET(
     }
 
     const residenceRequest = await prisma.residenceRequest.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         employee: {
           include: {
@@ -42,8 +43,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     const user = await getCurrentUser();
 
@@ -54,7 +56,7 @@ export async function PUT(
     const { status, comments } = await request.json();
 
     const residenceRequest = await prisma.residenceRequest.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status,
         comments,
@@ -84,8 +86,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     const user = await getCurrentUser();
 
@@ -94,7 +97,7 @@ export async function DELETE(
     }
 
     const residenceRequest = await prisma.residenceRequest.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     await prisma.auditLog.create({

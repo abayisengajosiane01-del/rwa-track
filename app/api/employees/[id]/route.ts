@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     const user = await getCurrentUser();
 
@@ -14,7 +15,7 @@ export async function GET(
     }
 
     const employee = await prisma.employee.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -33,6 +34,7 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+
     return NextResponse.json(employee);
   } catch (error) {
     console.error("[v0] Get employee error:", error);
@@ -45,8 +47,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     const user = await getCurrentUser();
 
@@ -57,7 +60,7 @@ export async function PUT(
     const data = await request.json();
 
     const employee = await prisma.employee.update({
-      where: { id: params.id },
+      where: { id },
       data,
     });
 
@@ -81,8 +84,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     const user = await getCurrentUser();
 
@@ -91,7 +95,7 @@ export async function DELETE(
     }
 
     const employee = await prisma.employee.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     await prisma.auditLog.create({
