@@ -32,7 +32,7 @@ export async function setAuthCookie(token: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set("auth-token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production" || process.env.NEXT_PUBLIC_API_URL?.startsWith("https"),
     sameSite: "lax",
     maxAge: 86400, // 24 hours
   });
