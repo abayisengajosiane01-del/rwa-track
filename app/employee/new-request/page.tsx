@@ -2,9 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
-import dynamic from "next/dynamic";
+import dynamicImport from "next/dynamic";
 
-const EmployeeNewRequestPage = dynamic(() => import("./new-request-client"), {
+const EmployeeNewRequestPage = dynamicImport(() => import("./new-request-client"), {
   ssr: false,
   loading: () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
