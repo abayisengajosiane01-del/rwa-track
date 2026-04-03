@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "RWATRACK",
+    "slug": "rwatrack-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#eff6ff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "RWATRACK needs your location to verify your work presence.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "RWATRACK needs background location to verify your work presence during working hours.",
+        "NSLocationAlwaysUsageDescription": "RWATRACK needs background location to verify your work presence during working hours."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#eff6ff"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "RWATRACK needs your location to verify work presence.",
+          "locationAlwaysPermission": "RWATRACK needs background location for work verification.",
+          "locationWhenInUsePermission": "RWATRACK needs your location to verify work presence.",
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ]
+    ]
+  }
+}
