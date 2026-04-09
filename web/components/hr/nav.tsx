@@ -31,7 +31,6 @@ export function HRNav({ user }: NavProps) {
             { href: "/hr", label: "Dashboard" },
             { href: "/hr/workers", label: "Workers" },
             { href: "/hr/location-history", label: "Location History" },
-            { href: "/hr/reports", label: "Reports" },
           ].map(({ href, label }) => (
             <Link key={href} href={href} className="text-sm font-medium text-foreground hover:text-primary transition">
               {label}
@@ -53,7 +52,6 @@ export function HRNav({ user }: NavProps) {
             <DropdownMenuItem asChild><Link href="/hr"><MapPin className="w-4 h-4 mr-2" />Dashboard</Link></DropdownMenuItem>
             <DropdownMenuItem asChild><Link href="/hr/workers"><Users className="w-4 h-4 mr-2" />Workers</Link></DropdownMenuItem>
             <DropdownMenuItem asChild><Link href="/hr/location-history"><MapPin className="w-4 h-4 mr-2" />Location History</Link></DropdownMenuItem>
-            <DropdownMenuItem asChild><Link href="/hr/reports"><BarChart2 className="w-4 h-4 mr-2" />Reports</Link></DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               <LogOut className="w-4 h-4 mr-2" />Logout
