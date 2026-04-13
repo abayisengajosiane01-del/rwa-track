@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 export interface TokenPayload {
   userId: string;
   email: string;
-  role: "ADMIN" | "HR" | "WORKER";
+  role: "ADMIN" | "HR" | "WORKER" | "EMPLOYEE";
 }
 
 export async function generateToken(payload: TokenPayload): Promise<string> {

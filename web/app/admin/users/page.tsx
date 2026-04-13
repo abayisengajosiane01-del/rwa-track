@@ -28,7 +28,7 @@ interface User {
   firstName: string;
   lastName: string;
   phone?: string;
-  role: "ADMIN" | "HR" | "EMPLOYEE";
+  role: "ADMIN" | "HR" | "WORKER" | "EMPLOYEE";
   status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
   createdAt: string;
 }
@@ -121,6 +121,8 @@ export default function AdminUsersPage() {
         return "bg-red-100 text-red-800";
       case "HR":
         return "bg-blue-100 text-blue-800";
+      case "WORKER":
+        return "bg-purple-100 text-purple-800";
       case "EMPLOYEE":
         return "bg-green-100 text-green-800";
       default:
@@ -246,6 +248,7 @@ export default function AdminUsersPage() {
                             <SelectContent>
                               <SelectItem value="ADMIN">Admin</SelectItem>
                               <SelectItem value="HR">HR</SelectItem>
+                              <SelectItem value="WORKER">Worker</SelectItem>
                               <SelectItem value="EMPLOYEE">Employee</SelectItem>
                             </SelectContent>
                           </Select>
