@@ -25,11 +25,23 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const where = auth.role === "HR" ? { worker: { hrId: auth.userId } } : {};
+
   const logs = await prisma.locationLog.findMany({
-    include: { worker: { include: { user: { select: { firstName: true, lastName: true, email: true } } } } },
+    where,
+    include: {
+      worker: {
+        include: {
+          user: { select: { firstName: true, lastName: true, email: true } },
+        },
+      },
+    },
     orderBy: { recordedAt: "desc" },
     take: 200,
   });
 
-  return NextResponse.json(logs);
+  // Filter out logs whose worker or user is orphaned
+  const valid = logs.filter((l) => l.worker !== null && l.worker.user !== null);
+
+  return NextResponse.json(valid);
 }

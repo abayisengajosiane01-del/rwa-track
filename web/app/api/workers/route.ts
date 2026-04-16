@@ -9,25 +9,37 @@ export async function GET() {
   }
 
   const where = auth.role === "HR" ? { hrId: auth.userId } : {};
+
   const workers = await prisma.worker.findMany({
     where,
     include: {
-      user: { select: { id: true, email: true, firstName: true, lastName: true, phone: true, status: true } },
+      user: {
+        select: { id: true, email: true, firstName: true, lastName: true, phone: true, status: true },
+      },
       hr: { select: { firstName: true, lastName: true, email: true } },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(workers);
+  // Separate valid from orphaned
+  const valid = workers.filter((w) => w.user !== null);
+  const orphanIds = workers.filter((w) => w.user === null).map((w) => w.id);
+
+  // Auto-delete orphans silently so they never cause issues again
+  if (orphanIds.length > 0) {
+    await prisma.worker.deleteMany({ where: { id: { in: orphanIds } } }).catch(() => null);
+  }
+
+  return NextResponse.json(valid);
 }
 
 export async function POST(request: NextRequest) {
   const auth = await getCurrentUser();
-  if (!auth || !["ADMIN", "HR"].includes(auth.role)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!auth || auth.role !== "HR") {
+    return NextResponse.json({ error: "Only HR can register workers" }, { status: 403 });
   }
 
-  const { firstName, lastName, email, phone, password, jobTitle, hrId, homeAddress, workAddress } =
+  const { firstName, lastName, email, phone, password, jobTitle, homeAddress, workAddress } =
     await request.json();
 
   if (!firstName || !lastName || !email || !password || !jobTitle) {
@@ -43,18 +55,26 @@ export async function POST(request: NextRequest) {
   });
 
   const worker = await prisma.worker.create({
-    data: {
-      userId: user.id,
-      hrId: hrId || (auth.role === "HR" ? auth.userId : null),
-      jobTitle,
-      homeAddress,
-      workAddress,
-    },
+    data: { userId: user.id, hrId: auth.userId, jobTitle, homeAddress, workAddress },
   });
 
   await prisma.auditLog.create({
     data: { userId: auth.userId, action: "CREATE_WORKER", resource: `Worker:${worker.id}` },
   });
 
-  return NextResponse.json({ ...worker, user }, { status: 201 });
+  // Return with full user object (excluding password)
+  return NextResponse.json(
+    {
+      ...worker,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        status: user.status,
+      },
+    },
+    { status: 201 }
+  );
 }

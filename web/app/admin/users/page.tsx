@@ -1,25 +1,16 @@
 "use client";
-
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { AdminNav } from "@/components/admin/nav";
+import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, Loader2, Users, ArrowLeft } from "lucide-react";
+import { AlertCircle, Loader2, Users, ArrowLeft, UserCheck } from "lucide-react";
 import Link from "next/link";
 
 interface User {
@@ -28,7 +19,7 @@ interface User {
   firstName: string;
   lastName: string;
   phone?: string;
-  role: "ADMIN" | "HR" | "WORKER" | "EMPLOYEE";
+  role: "ADMIN" | "HR" | "WORKER";
   status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
   createdAt: string;
 }
@@ -40,108 +31,40 @@ export default function AdminUsersPage() {
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch("/api/admin/users");
-        if (res.ok) {
-          setUsers(await res.json());
-        } else {
-          setError("Failed to load users");
-        }
-      } catch (err) {
-        setError("Error fetching users");
-        console.error("[v0] Fetch users error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
+    fetch("/api/admin/users")
+      .then((r) => r.ok ? r.json() : Promise.reject("Failed"))
+      .then((data: User[]) =>
+        // Show only ADMIN and HR — workers are managed by HR
+        setUsers(data.filter((u) => ["ADMIN", "HR"].includes(u.role)))
+      )
+      .catch(() => setError("Failed to load users"))
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
+  const updateUser = async (userId: string, patch: { role?: string; status?: string }) => {
     setUpdating(userId);
+    const current = users.find((u) => u.id === userId)!;
     try {
       const res = await fetch("/api/admin/users", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          role: newRole,
-          status: users.find((u) => u.id === userId)?.status,
-        }),
+        body: JSON.stringify({ userId, role: current.role, status: current.status, ...patch }),
       });
-
       if (res.ok) {
         const updated = await res.json();
-        setUsers(
-          users.map((u) =>
-            u.id === userId ? { ...u, role: updated.role } : u,
-          ),
-        );
+        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...updated } : u)));
       }
-    } catch (err) {
-      console.error("[v0] Update role error:", err);
     } finally {
       setUpdating(null);
     }
   };
 
-  const handleStatusChange = async (userId: string, newStatus: string) => {
-    setUpdating(userId);
-    try {
-      const res = await fetch("/api/admin/users", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          role: users.find((u) => u.id === userId)?.role,
-          status: newStatus,
-        }),
-      });
+  const roleColor = (r: string) =>
+    r === "ADMIN" ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800";
 
-      if (res.ok) {
-        const updated = await res.json();
-        setUsers(
-          users.map((u) =>
-            u.id === userId ? { ...u, status: updated.status } : u,
-          ),
-        );
-      }
-    } catch (err) {
-      console.error("[v0] Update status error:", err);
-    } finally {
-      setUpdating(null);
-    }
-  };
-
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case "ADMIN":
-        return "bg-red-100 text-red-800";
-      case "HR":
-        return "bg-blue-100 text-blue-800";
-      case "WORKER":
-        return "bg-purple-100 text-purple-800";
-      case "EMPLOYEE":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "ACTIVE":
-        return "bg-green-100 text-green-800";
-      case "INACTIVE":
-        return "bg-yellow-100 text-yellow-800";
-      case "SUSPENDED":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  const statusColor = (s: string) =>
+    s === "ACTIVE" ? "bg-green-100 text-green-800" :
+    s === "SUSPENDED" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800";
 
   if (loading) {
     return (
@@ -168,14 +91,17 @@ export default function AdminUsersPage() {
               <ArrowLeft className="w-4 h-4" />
               Back to Dashboard
             </Link>
-            <h1 className="text-3xl font-bold text-foreground">
-              User Management
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Manage system users, roles, and permissions
+            <h1 className="text-3xl font-bold text-foreground">User Management</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage Admin and HR accounts. Workers are managed by their assigned HR.
             </p>
           </div>
-          <Users className="w-12 h-12 text-blue-100" />
+          <Button asChild className="bg-primary hover:bg-primary/90">
+            <a href="/admin/hr">
+              <UserCheck className="w-4 h-4 mr-2" />
+              Manage HRs
+            </a>
+          </Button>
         </div>
 
         {error && (
@@ -187,78 +113,47 @@ export default function AdminUsersPage() {
 
         <Card className="border-blue-200">
           <CardHeader>
-            <CardTitle>All Users ({users.length})</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Admin & HR Users ({users.length})
+            </CardTitle>
             <CardDescription>
-              Manage user roles and account status
+              Update roles and account status. To add a new HR, use the Manage HRs page.
             </CardDescription>
           </CardHeader>
           <CardContent>
             {users.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-muted-foreground">No users found</p>
+              <div className="text-center py-10">
+                <Users className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="text-muted-foreground">No admin or HR users found</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-blue-200">
-                      <th className="text-left py-3 px-4 font-semibold text-sm">
-                        Name
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-sm">
-                        Email
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-sm">
-                        Role
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-sm">
-                        Status
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-sm">
-                        Joined
-                      </th>
+                      {["Name", "Email", "Phone", "Role", "Status", "Joined"].map((h) => (
+                        <th key={h} className="text-left py-3 px-4 text-sm font-semibold text-foreground">
+                          {h}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {users.map((user) => (
-                      <tr
-                        key={user.id}
-                        className="border-b border-blue-100 hover:bg-blue-50/50"
-                      >
-                        <td className="py-3 px-4 text-sm">
-                          <div className="font-semibold text-foreground">
-                            {user.firstName} {user.lastName}
-                          </div>
+                      <tr key={user.id} className="border-b border-blue-100 hover:bg-blue-50/50 transition">
+                        <td className="py-3 px-4 text-sm font-semibold text-foreground">
+                          {user.firstName} {user.lastName}
                         </td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground">
-                          {user.email}
-                        </td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.email}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.phone || "—"}</td>
                         <td className="py-3 px-4 text-sm">
-                          <Select
-                            defaultValue={user.role}
-                            onValueChange={(value) =>
-                              handleRoleChange(user.id, value)
-                            }
-                            disabled={updating === user.id}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="ADMIN">Admin</SelectItem>
-                              <SelectItem value="HR">HR</SelectItem>
-                              <SelectItem value="WORKER">Worker</SelectItem>
-                              <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Badge className={roleColor(user.role)}>{user.role}</Badge>
                         </td>
                         <td className="py-3 px-4 text-sm">
                           <Select
                             defaultValue={user.status}
-                            onValueChange={(value) =>
-                              handleStatusChange(user.id, value)
-                            }
+                            onValueChange={(v) => updateUser(user.id, { status: v })}
                             disabled={updating === user.id}
                           >
                             <SelectTrigger className="w-32">
@@ -267,9 +162,7 @@ export default function AdminUsersPage() {
                             <SelectContent>
                               <SelectItem value="ACTIVE">Active</SelectItem>
                               <SelectItem value="INACTIVE">Inactive</SelectItem>
-                              <SelectItem value="SUSPENDED">
-                                Suspended
-                              </SelectItem>
+                              <SelectItem value="SUSPENDED">Suspended</SelectItem>
                             </SelectContent>
                           </Select>
                         </td>

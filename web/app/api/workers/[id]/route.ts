@@ -18,7 +18,10 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     },
   });
 
-  if (!worker) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!worker || !worker.user) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   return NextResponse.json(worker);
 }
 
@@ -50,7 +53,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getCurrentUser();
-  if (!auth || auth.role !== "ADMIN") {
+  if (!auth || !["ADMIN", "HR"].includes(auth.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
